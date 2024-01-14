@@ -1,11 +1,13 @@
 require "json"
 require "pretty_print"
-require "stationeers"
+require "./stationeers"
 
 json = File.read("Stationeers.json")
 parsed = JSON.parse(json)
 
-types = ItemType.import(parsed["ItemType"].as_h)
+gd = GameData.new
+
+gd.import parsed
 puts "Types: #{types.size}"
 
 items = Item.import(parsed["Item"].as_h)

@@ -1,11 +1,15 @@
 name: stationeers-crafting
 version: 0.1.0
 
+repository: "https://github.com/MyrddinE/stationeers-crafting-data"
+
 authors:
   - Myrddin Emrys <myrddin@gmail.com>
 
 description: |
   Extracted data from the game Stationeers, to determine optimal build orders and minimal resource requirements.
+
+crystal: "~> 1.10"
 
 development_dependencies:
   crystalline:
@@ -13,6 +17,10 @@ development_dependencies:
     branch: master
 
 license: GPLv3
+
+targets:
+  scat:
+    main: src/scat.cr
 
 # dependencies:
 #   pg:

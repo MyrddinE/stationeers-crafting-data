@@ -1,0 +1,8 @@
+/bin/
+/lib/bisect/
+/lib/crystalline/
+/lib/lsp/
+/lib/priority-queue
+/lib/version_from_shard
+/lib/.shards.info
+

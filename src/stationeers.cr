@@ -1,5 +1,5 @@
 require "json"
-require "import"
+require "./import"
 
 enum Slot : UInt8
   AccessCard
@@ -34,6 +34,19 @@ end
 class GameData
   property itemtypes, items, recipes, ingredients
 
+  def initialize()
+    @itemtypes = Hash(String, ItemType).new
+    @items = Hash(String, Item).new
+    @recipes = Hash(String, Recipe).new
+    @ingredients = Hash(String, Ingredient).new
+  end
+
+  def initialize(any : JSON::Any)
+    @itemtypes = Hash(String, ItemType).new
+    @items = Hash(String, Item).new
+    @recipes = Hash(String, Recipe).new
+    @ingredients = Hash(String, Ingredient).new
+  end
 end
 
 class ItemType

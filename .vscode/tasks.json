@@ -1,0 +1,49 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "shell",
+			"command": "shards",
+			"args": [
+				"build",
+				"scat",
+				"--release",
+				"--no-debug",
+				"--progress",
+			],
+			"problemMatcher": [],
+			"label": "Shards: build release",
+			"group": {
+				"kind": "build",
+			}
+		},
+		{
+			"type": "shell",
+			"command": "shards",
+			"args": [
+				"build",
+				"scat",
+			],
+			"problemMatcher": [],
+			"label": "Shards: build",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
+		},
+		{
+			"type": "shell",
+			"command": "shards",
+			"args": [
+				"build",
+				"scat",
+				"--debug",
+			],
+			"problemMatcher": [],
+			"label": "Shards: build debug",
+			"group": {
+				"kind": "build",
+			}
+		}
+	]
+}

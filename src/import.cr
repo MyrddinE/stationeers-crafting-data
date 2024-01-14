@@ -1,3 +1,7 @@
+# Stationeers Crafting Automation Tool
+# (c)2024 Myrddin Emrys
+# Licensed under CC BY-SA
+
 require "json"
 
 module Import

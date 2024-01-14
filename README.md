@@ -1,0 +1,3 @@
+This in a hobby project, with the goal of determining the most efficient build order to achieve a specific goal in Stationeers. This is because Stationeers is very harsh, with you spawning onto a planet without the resources needed to survive more than a day or two in hard mode, and with hard limits on your long term survivability unless you achieve specific milestones (growing crops, building a respawn point in an hospitable room, etc).
+
+This is also a practice project to get better at coding in Crystal.

@@ -1,0 +1,22 @@
+version: 2.0
+shards:
+  bisect:
+    git: https://github.com/spider-gazelle/bisect.git
+    version: 1.2.1
+
+  crystalline:
+    git: https://github.com/elbywan/crystalline.git
+    version: 0.12.0+git.commit.83fd68c37e8b81fdc2f89f6a70fe68c7a8cebed9
+
+  lsp:
+    git: https://github.com/elbywan/crystal-lsp.git
+    version: 0.1.2
+
+  priority-queue:
+    git: https://github.com/spider-gazelle/priority-queue.git
+    version: 1.0.1
+
+  version_from_shard:
+    git: https://github.com/hugopl/version_from_shard.git
+    version: 1.2.5
+

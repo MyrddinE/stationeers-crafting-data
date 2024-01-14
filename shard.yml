@@ -1,0 +1,20 @@
+name: stationeers-crafting
+version: 0.1.0
+
+authors:
+  - Myrddin Emrys <myrddin@gmail.com>
+
+description: |
+  Extracted data from the game Stationeers, to determine optimal build orders and minimal resource requirements.
+
+development_dependencies:
+  crystalline:
+    github: elbywan/crystalline
+    branch: master
+
+license: GPLv3
+
+# dependencies:
+#   pg:
+#     github: will/crystal-pg
+#     version: "~> 0.5"

@@ -36,26 +36,28 @@ enum Slot : UInt8
 end
 
 class GameData
+  getter types, items, recipes
+
   def initialize()
-    @itemtypes = Hash(String, ItemType).new
+    @types = Hash(String, ItemType).new
     @items = Hash(String, Item).new
     @recipes = Hash(String, Recipe).new
   end
 
   def initialize(any : JSON::Any)
-    @itemtypes = Hash(String, ItemType).new
+    @types = Hash(String, ItemType).new
     @items = Hash(String, Item).new
     @recipes = Hash(String, Recipe).new
 
     self.import(any)
   end
 
-  def get_itemtype(s)
-    @itemtypes.has_key?(s) ? @itemtypes[s] : nil
+  def get_type(s)
+    @types.has_key?(s) ? @types[s] : nil
   end
 
   def get_item(s)
-    @item.has_key?(s) ? @item[s] : nil
+    @items.has_key?(s) ? @items[s] : nil
   end
 
   def get_recipe(s)
@@ -63,81 +65,172 @@ class GameData
   end
 
   def import(any : JSON::Any)
-    @itemtypes = self.itemtypes(any["ItemTypes"].as_h)
-    @items = self.items(any["Item"].as_h)
-    @recipes = self.recipes(any["Recipe"].as_h)
-    self.ingredients(any["Ingredient"].as_h)
-  end
-
-  private def itemtypes(data : Hash(String, JSON::Any))
-    hash = Hash(String, ItemType).new
-
-    data.each do |i|
-      name = i[0]; prop = i[1].as_h
-      category = Import.optional_string prop,"Category"
-      order = Import.uint8 prop, "Order"
-
-      hash[name] = ItemType.new(name, category, order)
+    h = any.as_h?
+    if !h
+      raise "JSON file in incorrect format."
+    else
+      @types = self.types(h, "ItemType")
+      @items = self.items(h, "Item")
+      @recipes = self.recipes(h, "Recipe")
+      self.ingredients(h, "Ingredient")
+      self.byproducts(h, "Byproduct")
+      self.toolalternates(h, "ToolAlternate")
     end
-
-    return hash
   end
 
-  private def items(data : Hash(String, JSON::Any))
-    hash = Hash(String, Item).new
+  private def types(h : Hash(String, JSON::Any), key : String)
+    if !h.has_key? key
+      raise "JSON file missing require key: #{key}"
+    elsif !h[key].as_h?
+      raise "JSON section #{key} must be a hash."
+    else
+      data = h[key].as_h
+      hash = Hash(String, ItemType).new
 
-    data.each do |i|
-      name = i[0]; prop = i[1].as_h
+      data.each do |d|
+        name = d[0]; prop = d[1].as_h
+        category = Import.optional_string prop,"Category"
+        order = Import.uint8 prop, "Order"
 
-      slot = Import.optional_string prop,"Slot"
-      id = Import.optional_string prop,"Id"
-      itype = Import.optional_string prop, "Type"
-
-      if itype
-        hash[name] = Item.new(name, itype, slot, id)
+        hash[name] = ItemType.new(name, category, order)
       end
-    end
 
-    return hash
+      return hash
+    end
   end
 
-  private def recipes(data : Hash(String, JSON::Any))
-    hash = Hash(String, Recipe).new
+  private def items(h : Hash(String, JSON::Any), key : String)
+    if !h.has_key? key
+      raise "JSON file missing require key: #{key}"
+    elsif !h[key].as_h?
+      raise "JSON section #{key} must be a hash."
+    else
+      data = h[key].as_h
+      hash = Hash(String, Item).new
 
-    data.each do |i|
-      name = i[0]; prop = i[1]
+      data.each do |d|
+        name = d[0]; prop = d[1].as_h
 
-      note = Import.optional_string prop, "Note"
-      t = Import.optional_string prop, "Tool"
-      r = Import.optional_string prop, "Result"
-      if t && r
-        tool = get_item t
-        result = get_item r
-        if tool && result
-          recipe = Recipe.new(name, tool, result, note)
-          hash[name] = recipe
-          tool.crafts[rcp] = nil
-          result.created_by[rcp] = 1.0
+        slot = Import.optional_string prop,"Slot"
+        id = Import.optional_string prop,"Id"
+        t = Import.optional_string prop, "Type"
+        itype = get_type t
+
+        if itype
+          hash[name] = Item.new(name, itype, slot, id)
+        end
+      end
+
+      return hash
+    end
+  end
+
+  private def recipes(h : Hash(String, JSON::Any), key : String)
+    if !h.has_key? key
+      raise "JSON file missing require key: #{key}"
+    elsif !h[key].as_h?
+      raise "JSON section #{key} must be a hash."
+    else
+      data = h[key].as_h
+      hash = Hash(String, Recipe).new
+
+      data.each do |d|
+        name = d[0]; prop = d[1].as_h
+
+        note = Import.optional_string prop, "Note"
+        t = Import.optional_string prop, "Tool"
+        r = Import.optional_string prop, "Result"
+        if t && r
+          tool = get_item t
+          result = get_item r
+          if tool && result
+            recipe = Recipe.new(name, tool, result, note)
+            hash[name] = recipe
+            tool.crafts[recipe] = nil
+            result.created_by[recipe] = 1.0
+          end
+        end
+      end
+
+      return hash
+    end
+  end
+
+  private def ingredients(h : Hash(String, JSON::Any), key : String)
+    if !h.has_key? key
+      raise "JSON file missing require key: #{key}"
+    elsif !h[key].as_h?
+      raise "JSON section #{key} must be a hash."
+    else
+      data = h[key].as_h
+      data.each do |d|
+        id = d[0]; prop = d[1].as_h
+        if prop["Recipe"]? && prop["Quantity"]? && prop["Item"]?
+          name = Import.string prop, "Recipe"
+          recipe = get_recipe name
+          quantity = Import.float64 prop, "Quantity"
+          i = Import.string prop, "Item"
+          item = get_item i
+          if item && recipe
+            recipe.ingredients[item] = quantity
+            item.ingredient_for[recipe] = quantity
+          else
+            puts "                     Missing #{i}"
+          end
         end
       end
     end
-
-    return hash
   end
 
-  private def ingredients(data : Hash(String, JSON::Any))
-    id = r[0]; prop = r[1]
-    if prop["Recipe"]? && prop["Quantity"]? && prop["Item"]?
-      name = Import.string prop, "Recipe"
-      recipe = get_recipe name
-      quantity = Import.float64 prop, "Quantity"
-      i = Import.string prop, "Item"
-      item = get_item i
-      if item && recipe
-        recipe.ingredients[item] = quantity
-        item.ingredient_for[recipe] = quantity
-      else
-        puts "                     Missing #{i}"
+  private def byproducts(h : Hash(String, JSON::Any), key : String)
+    if !h.has_key? key
+      raise "JSON file missing require key: #{key}"
+    elsif !h[key].as_h?
+      raise "JSON section #{key} must be a hash."
+    else
+      data = h[key].as_h
+      data.each do |d|
+        id = d[0]; prop = d[1].as_h
+        if prop["Recipe"]? && prop["Quantity"]? && prop["Item"]?
+          r = Import.string prop, "Recipe"
+          recipe = get_recipe r
+          i = Import.string prop, "Item"
+          item = get_item i
+          quantity = Import.float64 prop, "Quantity"
+          if recipe && item
+            recipe.byproducts[item] = quantity
+            item.created_by[recipe] = quantity
+          else
+            puts "                     Missing #{i}"
+          end
+        end
+      end
+    end
+  end
+
+  private def toolalternates(h : Hash(String, JSON::Any), key : String)
+    if !h.has_key? key
+      raise "JSON file missing require key: #{key}"
+    elsif !h[key].as_h?
+      raise "JSON section #{key} must be a hash."
+    else
+      data = h[key].as_h
+      data.each do |d|
+        t = d[0]; prop = d[1].as_h
+
+        if prop["Basic"]? && prop["Speed"]? && prop["Energy"]?
+          tool = get_item t
+          speed = Import.float64 prop, "Speed"
+          energy = Import.float64 prop, "Energy"
+          b = Import.string prop, "Basic"
+          basic = get_item b
+
+          if tool && basic
+            tool.basic_tool = basic
+            tool.speed = speed
+            tool.energy = energy
+          end
+        end
       end
     end
   end
